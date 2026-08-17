@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Prediction Result</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+
+        body{
+            background:#081b33;
+            color:white;
+            font-family:Arial;
+            margin:0;
+            padding:20px;
+        }
+
+        .container{
+            max-width:900px;
+            margin:auto;
+        }
+
+        .result-box,
+        .emergency-container,
+        .diet-box{
+            background:#102542;
+            padding:20px;
+            border-radius:12px;
+            margin-top:20px;
+            text-align:center;
+        }
+
+        .meter{
+            width:100%;
+            background:#ddd;
+            border-radius:30px;
+            overflow:hidden;
+            height:35px;
+            margin-top:20px;
+        }
+
+        .meter-fill{
+            height:100%;
+            background:red;
+            text-align:center;
+            line-height:35px;
+            color:white;
+            font-weight:bold;
+        }
+
+        button{
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:8px;
+            margin-top:15px;
+            font-size:16px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .emergency-btn{
+            background:red;
+            color:white;
+        }
+
+        .back-btn{
+            background:#00cfff;
+            color:white;
+        }
+
+        .pdf-btn{
+            background:#28a745;
+            color:white;
+        }
+
+        .wp-btn{
+            background:#25D366;
+            color:white;
+        }
+
+        .danger-mode{
+            animation:flash 1s infinite;
+        }
+
+        @keyframes flash{
+            0%{background:#081b33;}
+            50%{background:#400000;}
+            100%{background:#081b33;}
+        }
+
+        ul{
+            text-align:left;
+            line-height:30px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Risk Meter -->
+
+    <div class="meter">
+
+        <div class="meter-fill"style="width:{{ risk }}%;">
+
+            {{ risk }}%
+
+        </div>
+
+    </div>
+
+    <!-- Result Box -->
+
+    <div class="result-box">
+
+        <h2>{{ prediction_text }}</h2>
+
+        {% if bmi %}
+        <h3>Your BMI : {{ bmi }}</h3>
+        {% endif %}
+
+        <h1>{{ name }}</h1>
+
+        <h2>{{ result }}</h2>
+
+        <h3>Risk Percentage : {{ risk }}%</h3>
+
+    </div>
+
+    {% if emergency %}
+
+    <!-- Emergency Box -->
+
+    <div class="emergency-container">
+
+        <h1>🚨 HIGH RISK ALERT 🚨</h1>
+
+        <h2>Please Contact Doctor Immediately</h2>
+
+        <!-- WhatsApp Button -->
+
+        <a target="_blank"
+        href="https://wa.me/?text=High%20Risk%20Heart%20Disease%20Detected">
+
+            <button class="wp-btn">
+
+                Send WhatsApp Alert
+
+            </button>
+
+        </a>
+
+        <!-- Emergency Button -->
+
+        <button onclick="activateEmergency()"
+        class="emergency-btn">
+
+            Activate Emergency Alert
+
+        </button>
+
+    </div>
+
+    <!-- Alarm -->
+
+    <audio id="alarmSound">
+
+        <source src="{{ url_for('static', filename='alarm.mp3') }}"
+        type="audio/mpeg">
+
+    </audio>
+
+    <script>
+
+        window.onload = function(){
+
+            document.getElementById(
+            "alarmSound").play();
+
+            alert(
+            "WARNING! High Risk Heart Disease Detected!"
+            );
+
+            let warningVoice =
+            new SpeechSynthesisUtterance(
+
+            "Warning! High risk of heart disease detected."
+
+            );
+
+            speechSynthesis.speak(
+            warningVoice
+            );
+
+            document.body.classList.add(
+            "danger-mode"
+            );
+
+        }
+
+        function activateEmergency(){
+
+            alert(
+            "Emergency Alert Activated!"
+            );
+
+            let emergencyVoice =
+            new SpeechSynthesisUtterance(
+
+            "Emergency support activated."
+
+            );
+
+            speechSynthesis.speak(
+            emergencyVoice
+            );
+
+        }
+
+    </script>
+
+    {% else %}
+
+    <div class="result-box">
+
+        <h2 style="color:#00ff99;">
+
+            ✅ Low Risk Detected
+
+        </h2>
+
+    </div>
+
+    {% endif %}
+
+    <!-- Back Button -->
+
+    <a href="/dashboard">
+
+        <button class="back-btn">
+
+            Back
+
+        </button>
+
+    </a>
+
+    <!-- PDF Button -->
+
+    <a href="/download/{{name}}/{{age}}/{{sex}}/{{cp}}/{{bp}}/{{chol}}/{{fbs}}/{{result}}/{{risk}}">
+
+        <button class="pdf-btn">
+
+            Download Full PDF Report
+
+        </button>
+
+    </a>
+
+    <!-- Diet Box -->
+
+    <div class="diet-box">
+
+        <h2>Recommended Diet</h2>
+
+        <ul>
+
+            <li>Eat fruits daily</li>
+
+            <li>Avoid oily food</li>
+
+            <li>Drink more water</li>
+
+            <li>Walk 30 minutes daily</li>
+
+            <li>Maintain proper sleep</li>
+
+            <li>Regular health checkup recommended</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

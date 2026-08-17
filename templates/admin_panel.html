@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Panel</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, sans-serif;
+        }
+
+        body{
+            background:#f4f7fc;
+            padding:20px;
+        }
+
+        .container{
+            width:100%;
+            max-width:1300px;
+            margin:auto;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header{
+            background:#001f4d;
+            color:white;
+            padding:20px;
+            border-radius:10px;
+            margin-bottom:20px;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:15px;
+        }
+
+        .header h1{
+            font-size:32px;
+        }
+
+        .btn-group{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .btn{
+            text-decoration:none;
+            padding:10px 18px;
+            border-radius:6px;
+            color:white;
+            font-weight:bold;
+            transition:0.3s;
+        }
+
+        .dashboard-btn{
+            background:#0066cc;
+        }
+
+        .analytics-btn{
+            background:#28a745;
+        }
+
+        .logout-btn{
+            background:#dc3545;
+        }
+
+        .btn:hover{
+            opacity:0.9;
+        }
+
+        /* ================= SEARCH ================= */
+
+        .search-box{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            margin-bottom:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-form{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .search-form input{
+            flex:1;
+            min-width:250px;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:16px;
+        }
+
+        .search-form button{
+            padding:12px 20px;
+            border:none;
+            border-radius:6px;
+            background:#0066cc;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-box{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            overflow-x:auto;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        table th{
+            background:#001f4d;
+            color:white;
+            padding:14px;
+            text-align:center;
+        }
+
+        table td{
+            padding:12px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+        }
+
+        tr:hover{
+            background:#f5f5f5;
+        }
+
+        .high-risk{
+            color:#dc3545;
+            font-weight:bold;
+        }
+
+        .low-risk{
+            color:#28a745;
+            font-weight:bold;
+        }
+
+        /* ================= EMPTY ================= */
+
+        .empty{
+            text-align:center;
+            padding:30px;
+            color:#666;
+            font-size:18px;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media(max-width:768px){
+
+            .header{
+                flex-direction:column;
+                text-align:center;
+            }
+
+            .header h1{
+                font-size:26px;
+            }
+
+            .search-form{
+                flex-direction:column;
+            }
+
+            .search-form button{
+                width:100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ================= HEADER ================= -->
+
+        <div class="header">
+
+            <h1>Admin Panel</h1>
+
+            <div class="btn-group">
+
+                <a href="/analytics" class="btn analytics-btn">
+                    Analytics
+                </a>
+
+                <a href="/dashboard" class="btn dashboard-btn">
+                    Dashboard
+                </a>
+
+                <a href="/logout" class="btn logout-btn">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- ================= SEARCH ================= -->
+
+        <div class="search-box">
+
+            <form action="/admin_search" method="POST" class="search-form">
+
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search patient by name..."
+                    required
+                >
+
+                <button type="submit">
+                    Search
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- ================= TABLE ================= -->
+
+        <div class="table-box">
+
+            {% if records %}
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>BP</th>
+                        <th>Cholesterol</th>
+                        <th>Result</th>
+                        <th>Risk %</th>
+                        <th>Date</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in records %}
+
+                    <tr>
+
+                        <td>{{ row[0] }}</td>
+
+                        <td>{{ row[1] }}</td>
+
+                        <td>{{ row[2] }}</td>
+
+                        <td>{{ row[3] }}</td>
+
+                        <td>{{ row[4] }}</td>
+
+                        <td>{{ row[5] }}</td>
+
+                        <td>
+
+                            {% if "High" in row[6] %}
+
+                                <span class="high-risk">
+                                    {{ row[6] }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="low-risk">
+                                    {{ row[6] }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if row[7]|int > 50 %}
+
+                                <span class="high-risk">
+                                    {{ row[7] }}%
+                                </span>
+
+                            {% else %}
+
+                                <span class="low-risk">
+                                    {{ row[7] }}%
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>{{ row[8] }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+            <div class="empty">
+                No patient records found
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

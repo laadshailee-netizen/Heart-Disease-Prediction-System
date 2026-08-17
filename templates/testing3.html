@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Heart Health Assistant</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#0f172a,#111827,#1e293b);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* CHAT ICON */
+
+.chat-icon{
+    position:fixed;
+    bottom:25px;
+    right:25px;
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:34px;
+    cursor:pointer;
+    z-index:999;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    animation:pulse 2s infinite;
+    transition:0.3s;
+}
+
+.chat-icon:hover{
+    transform:scale(1.1);
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6);}
+    70%{box-shadow:0 0 0 18px rgba(37,99,235,0);}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0);}
+}
+
+/* CHATBOT */
+
+.chatbot{
+    position:fixed;
+    bottom:115px;
+    right:25px;
+    width:430px;
+    height:700px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:30px;
+    overflow:hidden;
+    display:none;
+    flex-direction:column;
+    z-index:999;
+    box-shadow:0 20px 50px rgba(0,0,0,0.45);
+    animation:popup 0.3s ease;
+}
+
+@keyframes popup{
+    from{
+        transform:translateY(40px);
+        opacity:0;
+    }
+    to{
+        transform:translateY(0);
+        opacity:1;
+    }
+}
+
+/* HEADER */
+
+.chat-header{
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    color:white;
+    padding:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.bot-avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:white;
+    color:#2563eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+}
+
+.header-text h2{
+    font-size:22px;
+}
+
+.header-text p{
+    font-size:12px;
+    opacity:0.9;
+    margin-top:3px;
+}
+
+.close-btn{
+    font-size:22px;
+    cursor:pointer;
+}
+
+/* BODY */
+
+.chat-body{
+    flex:1;
+    overflow-y:auto;
+    padding:18px;
+    background:rgba(255,255,255,0.03);
+}
+
+/* MESSAGE */
+
+.message{
+    margin-bottom:16px;
+    padding:14px 16px;
+    border-radius:18px;
+    max-width:85%;
+    line-height:1.6;
+    white-space:pre-line;
+    font-size:14px;
+    animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.bot{
+    background:white;
+    color:#111827;
+    border-bottom-left-radius:5px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+.user{
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    color:white;
+    margin-left:auto;
+    border-bottom-right-radius:5px;
+}
+
+/* TOPIC BUTTONS */
+
+.topics{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:20px;
+}
+
+.topic-btn{
+    padding:12px;
+    border:none;
+    border-radius:14px;
+    background:rgba(255,255,255,0.18);
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:13px;
+    font-weight:600;
+}
+
+.topic-btn:hover{
+    background:#2563eb;
+    transform:translateY(-2px);
+}
+
+/* INPUT */
+
+.chat-input{
+    padding:15px;
+    background:rgba(255,255,255,0.08);
+    display:flex;
+    gap:10px;
+    border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.chat-input input{
+    flex:1;
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:15px;
+    background:white;
+    font-size:14px;
+}
+
+.chat-input button{
+    width:55px;
+    border:none;
+    border-radius:15px;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+/* TYPING */
+
+.typing{
+    display:flex;
+    gap:5px;
+    padding:12px 16px;
+    width:70px;
+}
+
+.typing span{
+    width:8px;
+    height:8px;
+    background:#2563eb;
+    border-radius:50%;
+    animation:blink 1.4s infinite;
+}
+
+.typing span:nth-child(2){
+    animation-delay:0.2s;
+}
+
+.typing span:nth-child(3){
+    animation-delay:0.4s;
+}
+
+@keyframes blink{
+    0%,80%,100%{
+        opacity:0.2;
+    }
+    40%{
+        opacity:1;
+    }
+}
+
+/* RESPONSIVE */
+
+@media(max-width:500px){
+
+.chatbot{
+    width:96%;
+    height:92vh;
+    right:2%;
+    bottom:95px;
+}
+
+.topics{
+    grid-template-columns:1fr;
+}
+
+.chat-icon{
+    width:65px;
+    height:65px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- CHAT ICON -->
+
+<div class="chat-icon" onclick="toggleChat()">
+    ❤️
+</div>
+
+<!-- CHATBOT -->
+
+<div class="chatbot" id="chatbot">
+
+    <!-- HEADER -->
+
+    <div class="chat-header">
+
+        <div class="header-left">
+
+            <div class="bot-avatar">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+
+            <div class="header-text">
+                <h2>Heart AI Assistant</h2>
+                <p>English + हिंदी Medical Chatbot</p>
+            </div>
+
+        </div>
+
+        <div class="close-btn" onclick="toggleChat()">
+            <i class="fa-solid fa-xmark"></i>
+        </div>
+
+    </div>
+
+    <!-- BODY -->
+
+    <div class="chat-body" id="chatBody">
+
+        <div class="message bot">
+👋 Welcome to Heart Health AI Assistant
+
+I can help you with:
+
+❤️ Chest Pain  
+🩸 Blood Pressure  
+📈 ECG Reports  
+🍬 Blood Sugar  
+🧈 Cholesterol  
+💓 Heart Rate  
+🩺 Angina  
+📊 Old Peak  
+🧬 Thalassemia  
+📋 Normal Health Values
+
+नीचे किसी भी बटन पर क्लिक करें 👇
+        </div>
+
+        <div class="topics">
+
+            <button class="topic-btn" onclick="sendTopic('chest pain')">❤️ Chest Pain</button>
+
+            <button class="topic-btn" onclick="sendTopic('blood pressure')">🩸 Blood Pressure</button>
+
+            <button class="topic-btn" onclick="sendTopic('cholesterol')">🧈 Cholesterol</button>
+
+            <button class="topic-btn" onclick="sendTopic('blood sugar')">🍬 Blood Sugar</button>
+
+            <button class="topic-btn" onclick="sendTopic('ecg')">📈 ECG Result</button>
+
+            <button class="topic-btn" onclick="sendTopic('heart rate')">💓 Heart Rate</button>
+
+            <button class="topic-btn" onclick="sendTopic('angina')">🏃 Angina</button>
+
+            <button class="topic-btn" onclick="sendTopic('oldpeak')">📉 Old Peak</button>
+
+            <button class="topic-btn" onclick="sendTopic('slope')">📊 Slope</button>
+
+            <button class="topic-btn" onclick="sendTopic('vessels')">🩺 Major Vessels</button>
+
+            <button class="topic-btn" onclick="sendTopic('thalassemia')">🧬 Thalassemia</button>
+
+            <button class="topic-btn" onclick="sendTopic('normal values')">📋 Normal Values</button>
+
+        </div>
+
+    </div>
+
+    <!-- INPUT -->
+
+    <div class="chat-input">
+
+        <input type="text" id="userInput"
+        placeholder="Ask anything about heart health...">
+
+        <button onclick="sendMessage()">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const knowledge = {
+
+"chest pain":
+`❤️ CHEST PAIN / छाती में दर्द
+
+• Tightness in chest
+• Left arm pain
+• Sweating
+• Breathlessness
+
+🚨 Severe chest pain may indicate heart attack.
+
+छाती में तेज दर्द हार्ट अटैक का संकेत हो सकता है।`,
+
+"blood pressure":
+`🩸 BLOOD PRESSURE
+
+Normal: 120/80
+High BP: 140/90+
+Dangerous: 180/120+
+
+Symptoms:
+• Headache
+• Dizziness
+• Fatigue
+
+उच्च रक्तचाप हृदय पर दबाव बढ़ाता है।`,
+
+"cholesterol":
+`🧈 CHOLESTEROL
+
+LDL = Bad Cholesterol
+HDL = Good Cholesterol
+
+Normal Total Cholesterol:
+Below 200 mg/dL
+
+High cholesterol arteries को block कर सकता है।`,
+
+"blood sugar":
+`🍬 BLOOD SUGAR
+
+Normal: 70–99
+Prediabetes: 100–125
+Diabetes: 126+
+
+High sugar blood vessels को damage कर सकती है।`,
+
+"ecg":
+`📈 ECG REPORT
+
+ECG heart electrical activity दिखाता है।
+
+Detects:
+• Heart attack
+• Irregular heartbeat
+• Blockages
+
+Normal heart rate:
+60–100 bpm`,
+
+"heart rate":
+`💓 HEART RATE
+
+Normal resting heart rate:
+60–100 bpm
+
+Formula:
+220 - Age
+
+Example:
+Age 20 = 200 bpm max heart rate.`,
+
+"angina":
+`🏃 ANGINA
+
+Exercise के दौरान chest pain होना angina हो सकता है।
+
+Symptoms:
+• Chest tightness
+• Sweating
+• Breathlessness`,
+
+"oldpeak":
+`📉 OLD PEAK
+
+0 = Normal
+1–2 = Mild Risk
+2–4 = Moderate Risk
+4+ = High Risk`,
+
+"slope":
+`📊 SLOPE TYPES
+
+• Upsloping → Low Risk
+• Flat → Medium Risk
+• Downsloping → High Risk`,
+
+"vessels":
+`🩺 MAJOR VESSELS
+
+0 = Normal
+1–3 = Increasing blockage severity
+
+More blocked vessels = More heart disease risk.`,
+
+"thalassemia":
+`🧬 THALASSEMIA
+
+Genetic blood disorder affecting hemoglobin.
+
+Symptoms:
+• Weakness
+• Fatigue
+• Pale skin`,
+
+"normal values":
+`📋 NORMAL VALUES
+
+🩸 BP: 120/80
+🍬 Sugar: 70–99
+🧈 Cholesterol: <200
+💓 Heart Rate: 60–100 bpm
+
+सामान्य मान स्वस्थ हृदय के लिए महत्वपूर्ण हैं।`
+
+};
+
+/* TOGGLE */
+
+function toggleChat(){
+
+    const chatbot=document.getElementById('chatbot');
+
+    chatbot.style.display=
+    chatbot.style.display==='flex'
+    ? 'none'
+    : 'flex';
+}
+
+/* APPEND MESSAGE */
+
+function appendMessage(text,type){
+
+    const chatBody=document.getElementById('chatBody');
+
+    const msg=document.createElement('div');
+
+    msg.className=`message ${type}`;
+
+    msg.innerText=text;
+
+    chatBody.appendChild(msg);
+
+    chatBody.scrollTop=chatBody.scrollHeight;
+}
+
+/* TYPING */
+
+function showTyping(){
+
+    const chatBody=document.getElementById('chatBody');
+
+    const typing=document.createElement('div');
+
+    typing.className='message bot typing';
+
+    typing.id='typing';
+
+    typing.innerHTML=
+    `<span></span><span></span><span></span>`;
+
+    chatBody.appendChild(typing);
+
+    chatBody.scrollTop=chatBody.scrollHeight;
+}
+
+function removeTyping(){
+
+    const typing=document.getElementById('typing');
+
+    if(typing){
+        typing.remove();
+    }
+}
+
+/* TOPIC */
+
+function sendTopic(topic){
+
+    appendMessage(topic,'user');
+
+    showTyping();
+
+    setTimeout(()=>{
+
+        removeTyping();
+
+        appendMessage(knowledge[topic],'bot');
+
+    },1200);
+}
+
+/* MESSAGE */
+
+function sendMessage(){
+
+    const input=document.getElementById('userInput');
+
+    const text=input.value.toLowerCase().trim();
+
+    if(text==='') return;
+
+    appendMessage(input.value,'user');
+
+    input.value='';
+
+    showTyping();
+
+    let found=false;
+
+    for(let key in knowledge){
+
+        if(text.includes(key)){
+
+            found=true;
+
+            setTimeout(()=>{
+
+                removeTyping();
+
+                appendMessage(knowledge[key],'bot');
+
+            },1200);
+        }
+    }
+
+    /* EMERGENCY */
+
+    if(
+        text.includes('heart attack') ||
+        text.includes('severe pain') ||
+        text.includes('breathing problem')
+    ){
+
+        found=true;
+
+        setTimeout(()=>{
+
+            removeTyping();
+
+            appendMessage(
+`🚨 EMERGENCY WARNING
+
+Please consult a doctor immediately.
+
+यदि सीने में तेज दर्द या सांस लेने में तकलीफ हो रही है तो तुरंत डॉक्टर से संपर्क करें।`,
+'bot');
+
+        },1200);
+    }
+
+    if(!found){
+
+        setTimeout(()=>{
+
+            removeTyping();
+
+            appendMessage(
+`❌ Information not found.
+
+Try:
+• Chest Pain
+• ECG
+• Blood Pressure
+• Cholesterol
+• Heart Rate
+• Blood Sugar`,
+'bot');
+
+        },1200);
+    }
+
+}
+
+/* ENTER KEY */
+
+document.getElementById("userInput")
+.addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+        sendMessage();
+    }
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Heart Disease Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+
+            font-family: 'Segoe UI';
+
+            background: linear-gradient(135deg,
+                    #0f172a,
+                    #1e3a8a,
+                    #2563eb);
+
+            min-height: 100vh;
+
+            color: white;
+
+            transition: 0.5s;
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 40px;
+            right: 25px;
+            width: 520px;
+            max-height: 400px;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+            animation: popup 0.3s ease;
+            z-index: 999;
+        }
+
+        @keyframes popup {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            color: white;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .chat-header h2 {
+            font-size: 22px;
+        }
+
+        .chat-header p {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 14px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 14px;
+            white-space: pre-line;
+        }
+
+        .bot {
+            background: white;
+            border-left: 5px solid #2563eb;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .user {
+            background: #2563eb;
+            color: white;
+            margin-left: 50px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 12px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 18px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .topics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .topic-btn {
+            padding: 10px;
+            border: none;
+            background: #dbeafe;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.3s;
+        }
+
+        .topic-btn:hover {
+            background: #93c5fd;
+        }
+
+        @media(max-width:500px) {
+            .chatbot {
+                width: 95%;
+                right: 2.5%;
+                bottom: 100px;
+            }
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            width: 520px;
+            max-height: 500px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8fafc;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .bot {
+            background: white;
+            color: black;
+            border-left: 4px solid #2563eb;
+        }
+
+        .user {
+            background: #2563eb;
+            color: white;
+            margin-left: 40px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: white;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .topic-btn {
+            padding: 8px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: #dbeafe;
+            color: black;
+        }
+
+        .topics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        /* MAIN CARD */
+        .main-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            color: black;
+            position: relative;
+        }
+
+        /* HEART CONTAINER */
+        .heart-container {
+            position: absolute;
+            right: 40px;
+            bottom: 90px;
+        }
+
+        /* HEART BUTTON */
+        .chatbot-btn {
+            width: 80px !important;
+            height: 80px !important;
+            border: none;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+            color: white;
+            font-size: 35px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+
+            animation: heartbeat 1s infinite;
+        }
+
+        @keyframes heartbeat {
+
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.2);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* MOBILE */
+        @media(max-width:768px) {
+
+            .heart-container {
+                position: static;
+                margin-top: 20px;
+                text-align: center;
+            }
+
+            .chatbot-btn {
+                margin: auto;
+            }
+        }
+
+        .light-mode {
+
+            background: white;
+
+            color: black;
+        }
+
+        .custom-container {
+
+            width: 95%;
+
+            max-width: 1100px;
+
+            margin: auto;
+
+            padding: 20px;
+        }
+
+        h1 {
+
+            text-align: center;
+
+            margin-bottom: 25px;
+
+            font-weight: bold;
+        }
+
+        .card {
+
+            background: rgba(255, 255, 255, 0.08);
+
+            padding: 25px;
+
+            margin-top: 25px;
+
+            border-radius: 20px;
+
+            backdrop-filter: blur(10px);
+
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-card {
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 20px;
+
+            color: black;
+        }
+
+        .form-label {
+
+            font-weight: 600;
+        }
+
+        .form-control,
+        .form-select {
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: black !important;
+        }
+
+        button {
+
+            width: 100%;
+
+            padding: 14px;
+
+            margin-top: 15px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: linear-gradient(to right,
+                    #06b6d4,
+                    #3b82f6);
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        button:hover {
+
+            transform: translateY(-2px);
+
+            opacity: 0.9;
+        }
+
+        .extra-btn {
+
+            background: linear-gradient(to right,
+                    #f97316,
+                    #ef4444);
+        }
+
+        .result-box {
+
+            background: #16a34a;
+
+            color: white;
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            margin-top: 20px;
+
+            text-align: center;
+        }
+
+        .weather-box {
+
+            margin-top: 20px;
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .ecg-container {
+
+            width: 100%;
+
+            background: rgba(255, 255, 255, 0.08);
+
+            padding: 20px;
+
+            border-radius: 15px;
+
+            overflow: hidden;
+        }
+
+        .ecg-svg {
+
+            width: 100%;
+
+            height: 120px;
+        }
+
+        .ecg-svg path {
+
+            stroke-dasharray: 2000;
+
+            stroke-dashoffset: 2000;
+
+            animation: ecgMove 4s linear infinite;
+
+            filter: drop-shadow(0 0 8px #00ff99);
+        }
+
+        @keyframes ecgMove {
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .alert-box {
+
+            background: red;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .danger-mode {
+
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+
+            0% {
+                background: #0f172a;
+            }
+
+            50% {
+                background: red;
+            }
+
+            100% {
+                background: #0f172a;
+            }
+        }
+
+        table {
+
+            width: 100%;
+        }
+
+        img,
+        svg {
+
+            max-width: 100%;
+        }
+
+        .info-text {
+
+            font-size: 13px;
+
+            color: gray;
+        }
+
+        @media(max-width:768px) {
+
+            .custom-container {
+
+                width: 100%;
+            }
+
+            h1 {
+
+                font-size: 28px;
+            }
+
+            .card,
+            .main-card {
+
+                padding: 18px;
+            }
+
+
+            .chatbot-btn {
+                position: static !important;
+                margin-top: 25px;
+            }
+        }
+    </style>
+
+</head>
+
+<body id="body">
+
+    <div class="custom-container">
+
+        <h1>❤️ AI Heart Disease Dashboard</h1>
+
+        <button onclick="toggleMode()">
+
+            🌙 Dark / Light Mode
+
+        </button>
+
+        <!-- ECG -->
+
+        <div class="card">
+
+            <h2>❤️ Live ECG Monitor</h2>
+
+            <div class="ecg-container">
+
+                <svg viewBox="0 0 1000 120" class="ecg-svg">
+
+                    <path d="
+                    M0 60
+                    L80 60
+                    L100 50
+                    L120 70
+                    L140 20
+                    L160 100
+                    L180 60
+                    L260 60
+                    L280 50
+                    L300 70
+                    L320 20
+                    L340 100
+                    L360 60
+                    L440 60
+                    L460 50
+                    L480 70
+                    L500 20
+                    L520 100
+                    L540 60
+                    L620 60
+                    L640 50
+                    L660 70
+                    L680 20
+                    L700 100
+                    L720 60
+                    L1000 60
+                    " fill="none" stroke="#00ff99" stroke-width="4" stroke-linecap="round" />
+
+                </svg>
+
+            </div>
+
+        </div>
+
+        <!-- WEATHER -->
+        <div class="weather-card">
+
+            <h3>🌤 Current Weather</h3>
+
+            <p>City: {{ weather.city }}</p>
+
+            <p>Temperature: {{ weather.temperature }} °C</p>
+
+            <p>Humidity: {{ weather.humidity }} %</p>
+
+            <p>Condition: {{ weather.condition }}</p>
+
+
+        </div>
+
+        <!-- PREDICTION FORM -->
+
+        <div class="container">
+            <div class="main-card">
+
+                <h1>❤️ Heart Disease Prediction</h1>
+
+                <form action="/predict" method="POST">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label for="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                            <label class="form-label">Age</label>
+                            <input type="number" name="age" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Gender</label>
+                            <select name="sex" class="form-select" required>
+                                <option value="1">Male</option>
+                                <option value="0">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Chest Pain Type</label>
+                            <select name="cp" class="form-select" required>
+                                <option value="0">Typical Angina</option>
+                                <option value="1">Atypical Angina</option>
+                                <option value="2">Non-anginal Pain</option>
+                                <option value="3">Asymptomatic</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Resting Blood Pressure (mm Hg)</label>
+                            <input type="number" name="trestbps" class="form-control" required>
+                            <div class="info-text">Normal: 90 - 120 mm Hg</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cholesterol (mg/dL)</label>
+                            <input type="number" name="chol" class="form-control" required>
+                            <div class="info-text">Normal: Below 200 mg/dL</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fasting Blood Sugar (mg/dL)</label>
+                            <input type="number" step="0.1" name="fbs_real" class="form-control" required>
+                            <div class="info-text">Normal: 70 - 120 mg/dL</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rest ECG Result</label>
+                            <select name="restecg" class="form-select" required>
+                                <option value="0">Normal</option>
+                                <option value="1">ST-T Wave Abnormality</option>
+                                <option value="2">Left Ventricular Hypertrophy</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Maximum Heart Rate</label>
+                            <input type="number" name="thalach" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Exercise Induced Angina</label>
+                            <select name="exang" class="form-select" required>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Oldpeak</label>
+                            <input type="number" step="0.1" name="oldpeak" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Slope</label>
+                            <select name="slope" class="form-select" required>
+                                <option value="0">Upsloping</option>
+                                <option value="1">Flat</option>
+                                <option value="2">Downsloping</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Major Vessels (0-3)</label>
+                            <input type="number" min="0" max="3" name="ca" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Thalassemia</label>
+                            <select name="thal" class="form-select" required>
+                                <option value="1">Normal</option>
+                                <option value="2">Fixed Defect</option>
+                                <option value="3">Reversible Defect</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="heart-container">
+                        <button type="button" class="chatbot-btn" onclick="toggleChatbot()">
+                            ❤️
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-custom">
+                        Predict Heart Disease
+                    </button>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- BMI -->
+
+            <div class="card">
+
+                <h2 style="color: #f97316;">⚖ BMI Calculator</h2>
+
+                <input type="number" id="weight" class="form-control" placeholder="Weight KG">
+
+                <input type="number" id="height" class="form-control" placeholder="Height CM" style="margin-top:20px;">
+
+                <span style="color: #f97316;"> let heightMeter = h / 100;</span>
+
+                <audio id="alarmSound" autoplay></audio>
+
+                <button onclick="calculateBMI()">
+
+                    Calculate BMI
+
+                </button>
+
+                <div id="bmi-result" class="result-box">
+
+                    BMI Result Here
+
+                </div>
+
+            </div>
+
+            <!-- REMINDER -->
+
+            <div class="card">
+
+                <h2>⏰ Medicine Reminder</h2>
+
+                <input type="time" id="medTime" class="form-control">
+
+                <button onclick="showTime()">
+
+                    Set Reminder
+
+                </button>
+
+                <p id="demo"></p>
+
+            </div>
+
+            <!-- EMERGENCY -->
+
+            <div class="card">
+
+    <h2>🚨 Emergency Alert</h2>
+
+    <div class="alert-box">
+
+        Emergency Support Available
+
+        <button onclick="emergencyAlert()">
+            Emergency Alert Button
+        </button>
+
+        <button onclick="sendSOS()" class="btn btn-danger mt-3">
+            🚨 SEND SOS ALERT
+        </button>
+
+    </div>
+
+</div>
+
+
+
+            <!-- NAVIGATION -->
+
+            <div class="card">
+
+                <h2>📊 Dashboard Features</h2>
+
+                <a href="/history">
+
+                    <button class="extra-btn">
+
+                        📁 Patient History
+
+                    </button>
+
+                </a>
+
+                <a href="/analytics">
+
+                    <button class="extra-btn">
+
+                        📈 Analytics
+
+                    </button>
+
+                </a>
+
+                <a href="/chatbot">
+
+                    <button class="extra-btn">
+
+                        🤖 AI Chatbot
+
+                    </button>
+
+                </a>
+
+                <a href="/export">
+
+                    <button class="extra-btn">
+
+                        📥 Export Excel
+
+                    </button>
+
+                </a>
+                <a href="/admin">
+
+                    <button class="extra-btn">
+
+                        🔐 Admin Login
+
+                    </button>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    
+
+        </div>
+
+        <div class="chatbot" id="chatbot">
+            <div class="chat-header">
+                <h2>Heart Health AI Chatbot</h2>
+                <p>English + हिंदी Medical Assistant for Heart Disease</p>
+            </div>
+
+            <div class="chat-body" id="chatBody">
+
+                <div class="message bot">
+                    👋 Welcome!
+
+                    You can ask about:
+                    • Chest Pain
+                    • Blood Pressure
+                    • Cholesterol
+                    • ECG
+                    • Thalassemia
+                    • Heart Rate
+
+                    नीचे दिए गए किसी भी बटन पर क्लिक करें।
+                </div>
+
+                <div class="topics">
+                    <button class="topic-btn" onclick="sendTopic('chest pain')">Chest Pain</button>
+                    <button class="topic-btn" onclick="sendTopic('blood pressure')">Blood Pressure</button>
+                    <button class="topic-btn" onclick="sendTopic('cholesterol')">Cholesterol</button>
+                    <button class="topic-btn" onclick="sendTopic('blood sugar')">Blood Sugar</button>
+                    <button class="topic-btn" onclick="sendTopic('ecg')">ECG Result</button>
+                    <button class="topic-btn" onclick="sendTopic('heart rate')">Heart Rate</button>
+                    <button class="topic-btn" onclick="sendTopic('angina')">Angina</button>
+                    <button class="topic-btn" onclick="sendTopic('oldpeak')">Old Peak</button>
+                    <button class="topic-btn" onclick="sendTopic('slope')">Slope</button>
+                    <button class="topic-btn" onclick="sendTopic('vessels')">Major Vessels</button>
+                    <button class="topic-btn" onclick="sendTopic('thalassemia')">Thalassemia</button>
+                    <button class="topic-btn" onclick="sendTopic('normal values')">Normal Values</button>
+                </div>
+
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Ask in English or हिंदी...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <script>
+
+            // DARK MODE
+
+            function toggleMode() {
+
+                document.body.classList.toggle("light-mode");
+            }
+
+            // BMI
+
+            function calculateBMI() {
+
+                let w = document.getElementById('weight').value;
+
+                let h = document.getElementById('height').value;
+
+                let heightMeter = h * 0.3048;
+
+                let bmi = w / (heightMeter * heightMeter);
+
+                document.getElementById('bmi-result').innerHTML =
+
+                    'Your BMI : ' + bmi.toFixed(2);
+
+                speak('Your BMI is ' + bmi.toFixed(2));
+            }
+
+            // VOICE
+
+            function speak(text) {
+
+                let speech = new SpeechSynthesisUtterance(text);
+
+                speech.lang = "en-US";
+
+                speech.rate = 1;
+
+                window.speechSynthesis.speak(speech);
+            }
+
+            function toggleChatbot() {
+                const box = document.getElementById("chatbot");
+                if (!box) return;
+                box.style.display = box.style.display === "flex" ? "none" : "flex";
+            }
+
+
+            // REMINDER
+
+            function showTime() {
+
+                let time = document.getElementById("medTime").value;
+
+                document.getElementById("demo").innerHTML =
+
+                    "⏰ Reminder Time : " + time;
+
+                alert("Reminder Set for " + time);
+
+                speak("Reminder set for " + time);
+            }
+
+            // EMERGENCY
+
+            function emergencyAlert() {
+
+                document.body.classList.add("danger-mode");
+
+                alert(
+
+                    'Emergency Alert Activated! Contact Doctor Immediately.'
+                );
+
+                speak(
+
+                    'Emergency Alert Activated'
+                );
+
+                setTimeout(() => {
+
+                    document.body.classList.remove("danger-mode");
+
+                }, 5000);
+            }
+            
+
+
+            // sos system
+            function sendSOS() {
+
+    alert("SOS Button Clicked");
+
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            let latitude = position.coords.latitude;
+            let longitude = position.coords.longitude;
+
+            fetch("/send_sos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    latitude: latitude,
+                    longitude: longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.log(error);
+                alert("SOS Failed");
+            });
+
+        },
+
+        function(error) {
+            alert("Location Permission Denied");
+            console.log(error);
+        }
+
+    );
+}
+
+        
+
+
+
+            
+
+            const knowledge = {
+                "normal values": `📋 NORMAL HEART HEALTH VALUES / सामान्य हृदय स्वास्थ्य मान
+
+ENGLISH:
+
+1. Resting Blood Pressure:
+• Normal: 90/60 to 120/80 mmHg
+• Elevated: 120–129/<80
+• High BP Stage 1: 130–139/80–89
+• High BP Stage 2: 140/90 or higher
+• Dangerous: Above 180/120
+
+2. Cholesterol:
+• Total Cholesterol Normal: Below 200 mg/dL
+• Borderline: 200–239
+• High: 240+
+
+LDL Cholesterol:
+• Best: Below 100
+• Near Optimal: 100–129
+• Borderline High: 130–159
+• High: 160–189
+• Very High: 190+
+
+HDL Cholesterol:
+• Good: 60+
+• Bad: Below 40
+
+3. Fasting Blood Sugar:
+• Normal: 70–99 mg/dL
+• Prediabetes: 100–125
+• Diabetes: 126+
+• Dangerous Low Sugar: Below 70
+
+4. Maximum Heart Rate:
+Formula = 220 - Age
+
+Examples:
+• Age 20 → 200 bpm
+• Age 30 → 190 bpm
+• Age 40 → 180 bpm
+• Age 50 → 170 bpm
+
+5. Old Peak:
+• 0 → Normal
+• 1–2 → Mild Risk
+• 2–4 → Moderate Risk
+• Above 4 → High Risk
+
+6. Major Vessels:
+• 0 → Normal
+• 1 → Mild blockage
+• 2 → Moderate blockage
+• 3 → Severe blockage
+
+HINDI:
+
+1. आराम की अवस्था का रक्तचाप:
+• सामान्य: 90/60 से 120/80
+• बढ़ा हुआ: 120–129
+• हाई BP स्टेज 1: 130–139/80–89
+• हाई BP स्टेज 2: 140/90+
+• बहुत खतरनाक: 180/120+
+
+2. कोलेस्ट्रॉल:
+• सामान्य: 200 से कम
+• बॉर्डरलाइन: 200–239
+• अधिक: 240+
+
+LDL:
+• सबसे अच्छा: 100 से कम
+• अधिक: 160+
+
+HDL:
+• अच्छा: 60+
+• खराब: 40 से कम
+
+3. फास्टिंग ब्लड शुगर:
+• सामान्य: 70–99
+• प्रीडायबिटीज: 100–125
+• डायबिटीज: 126+
+
+4. ओल्ड पीक:
+• 0 सामान्य
+• 4 से ऊपर अधिक खतरा
+
+5. मेजर वेसल्स:
+• 0 सामान्य
+• 3 गंभीर ब्लॉकेज`,
+                "chest pain": `❤️ CHEST PAIN / छाती में दर्द
+
+ENGLISH:
+Chest pain is one of the most important symptoms of heart disease. It may happen because the heart is not getting enough oxygen-rich blood.
+
+Pain Duration:
+• Few seconds → Usually not cardiac
+• 5–15 minutes → Possible angina
+• More than 20 minutes → Possible heart attack
+
+Danger Signs:
+• Sweating
+• Breathlessness
+• Pain in left arm
+• Jaw pain
+• Nausea
+
+Types:
+1. Typical Angina → Pain during exercise or stress.
+2. Atypical Angina → Unusual chest discomfort.
+3. Non-anginal Pain → Pain not related to the heart.
+4. Asymptomatic → No visible pain but disease may exist.
+
+Symptoms:
+• Tightness in chest
+• Burning sensation
+• Pressure or squeezing pain
+• Pain spreading to jaw or arm
+
+HINDI:
+छाती में दर्द हृदय रोग का एक महत्वपूर्ण संकेत हो सकता है। यह तब होता है जब हृदय को पर्याप्त रक्त नहीं मिलता।
+
+प्रकार:
+1. टाइपिकल एंजाइना → मेहनत करने पर दर्द
+2. एटिपिकल एंजाइना → अलग प्रकार का दर्द
+3. नॉन-एंजाइनल दर्द → हृदय से संबंधित नहीं
+4. एसिम्प्टोमैटिक → दर्द नहीं लेकिन समस्या हो सकती है
+
+लक्षण:
+• सीने में जकड़न
+• जलन
+• दबाव जैसा दर्द
+• हाथ या जबड़े तक दर्द फैलना`,
+
+                "blood pressure": `🩸 RESTING BLOOD PRESSURE / आराम की स्थिति का रक्तचाप
+
+ENGLISH:
+Blood pressure measures the force of blood against artery walls.
+
+Normal: 120/80 mmHg
+High BP: Above 140/90
+Low BP: Below 90/60
+
+High blood pressure can damage arteries and increase heart attack risk.
+
+Symptoms of High BP:
+• Headache
+• Dizziness
+• Fatigue
+• Chest discomfort
+
+HINDI:
+रक्तचाप वह दबाव है जिससे रक्त धमनियों में बहता है।
+
+सामान्य: 120/80
+उच्च रक्तचाप: 140/90 से अधिक
+कम रक्तचाप: 90/60 से कम
+
+उच्च रक्तचाप हृदय पर अतिरिक्त दबाव डालता है और हार्ट अटैक का खतरा बढ़ाता है।`,
+
+                "cholesterol": `🧈 CHOLESTEROL / कोलेस्ट्रॉल
+
+ENGLISH:
+Cholesterol is a fatty substance found in blood.
+
+Types:
+• LDL → Bad cholesterol
+• HDL → Good cholesterol
+
+High cholesterol blocks arteries and reduces blood flow.
+
+Normal Range:
+• Total Cholesterol: Below 200 mg/dL
+• LDL: Below 100
+• HDL: Above 60
+• Triglycerides: Below 150
+
+High cholesterol increases risk of:
+• Heart attack
+• Stroke
+• Coronary artery disease
+
+Causes:
+• Junk food
+• Obesity
+• Smoking
+• Lack of exercise
+
+HINDI:
+कोलेस्ट्रॉल रक्त में पाया जाने वाला वसा जैसा पदार्थ है।
+
+LDL खराब कोलेस्ट्रॉल है जबकि HDL अच्छा कोलेस्ट्रॉल है।
+
+अधिक कोलेस्ट्रॉल धमनियों को ब्लॉक कर सकता है।
+
+कारण:
+• तला हुआ खाना
+• मोटापा
+• धूम्रपान
+• व्यायाम की कमी`,
+
+                "blood sugar": `🍬 FASTING BLOOD SUGAR / फास्टिंग ब्लड शुगर
+
+ENGLISH:
+Fasting blood sugar is measured after not eating for 8–10 hours.
+
+Normal: 70–99 mg/dL
+Prediabetes: 100–125
+Diabetes: 126+
+
+High sugar damages blood vessels and heart health.
+
+Detailed Range:
+• 70–99 → Normal
+• 100–125 → Prediabetes
+• 126+ → Diabetes
+• 200+ → Dangerous high sugar
+
+Symptoms:
+• Frequent urination
+• Increased thirst
+• Fatigue
+• Blurred vision
+
+HINDI:
+फास्टिंग ब्लड शुगर खाली पेट मापी जाती है।
+
+सामान्य: 70–99
+प्रीडायबिटीज: 100–125
+डायबिटीज: 126+
+
+अधिक शुगर हृदय और रक्त वाहिकाओं को नुकसान पहुंचाती है।`,
+
+                "ecg": `📈 REST ECG RESULT / ईसीजी परिणाम
+
+ENGLISH:
+ECG records electrical activity of the heart.
+
+Results:
+• Normal ECG
+• ST-T abnormality
+• Left ventricular hypertrophy
+
+Normal Heart Rate in ECG:
+• Adult resting pulse: 60–100 bpm
+• Athletes: 40–60 bpm
+• Above 100 bpm → Tachycardia
+• Below 60 bpm → Bradycardia
+
+ECG helps detect:
+• Heart attack
+• Irregular heartbeat
+• Blockages
+
+HINDI:
+ECG हृदय की विद्युत गतिविधि को रिकॉर्ड करता है।
+
+यह निम्न समस्याओं का पता लगाता है:
+• हार्ट अटैक
+• धड़कन की अनियमितता
+• ब्लॉकेज`,
+
+                "heart rate": `💓 MAXIMUM HEART RATE / अधिकतम हृदय गति
+
+ENGLISH:
+Maximum heart rate is the highest number of heartbeats during exercise.
+
+Formula:
+220 - Age
+
+Example:
+Age 20 → 200 bpm
+
+Low maximum heart rate may indicate heart weakness.
+
+HINDI:
+व्यायाम के दौरान हृदय की सबसे अधिक धड़कन को अधिकतम हृदय गति कहते हैं।
+
+सूत्र:
+220 - आयु
+
+उदाहरण:
+20 वर्ष → 200 bpm`,
+
+                "angina": `🏃 EXERCISE INDUCED ANGINA / व्यायाम से होने वाला एंजाइना
+
+ENGLISH:
+Angina is chest pain caused by reduced blood flow to the heart.
+
+If pain occurs during exercise, it may indicate coronary artery blockage.
+
+Symptoms:
+• Chest tightness
+• Breathlessness
+• Sweating
+• Fatigue
+
+HINDI:
+व्यायाम करते समय होने वाला छाती का दर्द एंजाइना कहलाता है।
+
+यह हृदय की धमनियों में ब्लॉकेज का संकेत हो सकता है।`,
+
+                "oldpeak": `📉 OLD PEAK / ओल्ड पीक
+
+ENGLISH:
+Oldpeak measures ST depression during exercise ECG.
+
+Higher values mean higher heart disease risk.
+
+0 is generally considered better.
+
+HINDI:
+ओल्ड पीक ECG में ST Depression को दर्शाता है।
+
+जितना अधिक Old Peak होगा उतना अधिक हृदय रोग का खतरा हो सकता है।`,
+
+                "slope": `📊 SLOPE / स्लोप
+
+ENGLISH:
+Slope represents the direction of the ST segment during exercise ECG.
+
+Types:
+• Upsloping → Lower risk
+• Flat → Medium risk
+• Downsloping → High risk
+
+HINDI:
+स्लोप ECG में ST Segment की दिशा को दर्शाता है।
+
+प्रकार:
+• अपस्लोपिंग → कम खतरा
+• फ्लैट → मध्यम खतरा
+• डाउनस्लोपिंग → अधिक खतरा`,
+
+                "vessels": `🩺 MAJOR VESSELS / मुख्य रक्त वाहिकाएँ
+
+ENGLISH:
+Major vessels indicate the number of blood vessels affected in the heart.
+
+0 = Normal
+1–3 = Increasing disease severity
+
+More blocked vessels mean higher risk of heart attack.
+
+HINDI:
+यह हृदय की मुख्य रक्त वाहिकाओं की संख्या दर्शाता है जिनमें समस्या हो सकती है।
+
+0 = सामान्य
+1–3 = अधिक संख्या मतलब अधिक खतरा`,
+
+                "thalassemia": `🩸 THALASSEMIA / थैलेसीमिया
+
+ENGLISH:
+Thalassemia is a genetic blood disorder affecting hemoglobin production.
+
+Types:
+• Normal
+• Fixed Defect
+• Reversible Defect
+
+Symptoms:
+• Weakness
+• Fatigue
+• Pale skin
+• Breathing problems
+
+HINDI:
+थैलेसीमिया एक आनुवंशिक रक्त विकार है जिसमें हीमोग्लोबिन सही मात्रा में नहीं बनता।
+
+लक्षण:
+• कमजोरी
+• थकान
+• सांस लेने में परेशानी
+• पीली त्वचा`
+            };
+            for (let key in knowledge) {
+                if (text.includes(key)) {
+                    found = true;
+                    setTimeout(() => {
+                        appendMessage(knowledge[key], 'bot');
+                    }, 500);
+                }
+            }
+
+            if (!found) {
+                setTimeout(() => {
+                    appendMessage('❌ Information not found.\n\nTry keywords like: chest pain, cholesterol, ECG, blood pressure, angina, thalassemia etc.', 'bot');
+                }, 500);
+            }
+            function appendMessage(text, type) {
+                const body = document.getElementById('chatBody');
+                const d = document.createElement('div');
+                d.className = 'message ' + type;
+                d.innerText = text;
+                body.appendChild(d);
+                body.scrollTop = body.scrollHeight;
+            }
+
+            function sendMessage() {
+                const input = document.getElementById('userInput');
+                const text = input.value.trim().toLowerCase();
+                if (!text) return;
+                appendMessage(input.value, 'user');
+                input.value = '';
+                let found = false;
+                for (const k in knowledge) {
+                    if (text.includes(k)) { appendMessage(knowledge[k], 'bot'); found = true; }
+                }
+                if (!found) appendMessage('Information not found.', 'bot');
+            }
+
+            function toggleChat() {
+      const chatbot = document.getElementById('chatbot');
+      chatbot.style.display = chatbot.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function appendMessage(text, type) {
+      const chatBody = document.getElementById('chatBody');
+      const msg = document.createElement('div');
+      msg.className = `message ${type}`;
+      msg.innerText = text;
+      chatBody.appendChild(msg);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function sendTopic(topic) {
+      appendMessage(topic, 'user');
+
+      setTimeout(() => {
+        appendMessage(knowledge[topic], 'bot');
+      }, 500);
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.toLowerCase().trim();
+
+      if (text === '') return;
+
+      appendMessage(input.value, 'user');
+
+      input.value = '';
+
+      let found = false;
+
+      for (let key in knowledge) {
+        if (text.includes(key)) {
+          found = true;
+          setTimeout(() => {
+            appendMessage(knowledge[key], 'bot');
+          }, 500);
+        }
+      }
+
+      if (!found) {
+        setTimeout(() => {
+          appendMessage('❌ Information not found.\n\nTry keywords like: chest pain, cholesterol, ECG, blood pressure, angina, thalassemia etc.', 'bot');
+        }, 500);
+      }
+    }
+            
+        </script>
+
+
+
+
+
+
+</body>
+
+</html>
